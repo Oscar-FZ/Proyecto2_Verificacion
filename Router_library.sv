@@ -8,6 +8,8 @@
     `define LIB
 `endif
 
+`define DEBUG = 1;
+
 module conector #(parameter size = 40) (
   input  [size-1:0] in,
   output [size-1:0] out
@@ -113,18 +115,20 @@ module router_bus_interface #(parameter pck_sz = 40, parameter num_ntrfs=4, para
     $display("trgt_r: %g", data_out[pck_sz-9:pck_sz-12]);
     $display("trgt_c: %g", data_out[pck_sz-13:pck_sz-16]);
     $display("mode: %g",data_out[pck_sz-17]);
-    $display("src: %g",data_out[pck_sz-18:pck_sz-25]);
-    $display("id: %g",data_out[pck_sz-26:pck_sz-33]);
-    $display("pyld: %h",data_out[pck_sz-34:0]);
+    //$display("src: %g",data_out[pck_sz-18:pck_sz-25]);
+    //$display("id: %g",data_out[pck_sz-26:pck_sz-33]);
+    //$display("pyld: %h",data_out[pck_sz-34:0]);
+    $display("pyld: %h", data_out[pck_sz-18:0]);
   end
   always@(posedge popin) begin
     $display("ntrfs: Message received  in terminal: %g router ID: %g %g at time %g", ntrfs_id,id_r,id_c,$time );
     $display("trgt_r: %g", data_out_i_in[pck_sz-9:pck_sz-12]);
     $display("trgt_c: %g", data_out_i_in[pck_sz-13:pck_sz-16]);
     $display("mode: %g",data_out_i_in[pck_sz-17]);
-    $display("src: %g",data_out_i_in[pck_sz-18:pck_sz-25]);
-    $display("id: %g",data_out_i_in[pck_sz-26:pck_sz-33]);
-    $display("pyld: %h",data_out_i_in[pck_sz-34:0]);
+    //$display("src: %g",data_out_i_in[pck_sz-18:pck_sz-25]);
+    //$display("id: %g",data_out_i_in[pck_sz-26:pck_sz-33]);
+    //$display("pyld: %h",data_out_i_in[pck_sz-34:0]);
+    $display("pyld: %h", data_out_i_in[pck_sz-18:0]);
   end
 `endif
 
