@@ -8,7 +8,7 @@
     `define LIB
 `endif
 
-`define DEBUG = 0;
+//`define DEBUG = 1;
 
 module conector #(parameter size = 40) (
   input  [size-1:0] in,

@@ -53,7 +53,7 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 	task receive_data_mesh();
 		forever begin
 			@(posedge vif.clk);
-			if (vif.pndng[id]) begin
+			if (vif.pndng[id] && !vif.pop[id]) begin
 				queue_out.push_front(vif.data_out[id]);
 				vif.pop[id] = 1'b1;
 			end
@@ -124,6 +124,27 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 		$display("[ERROR!!!!]");
 	endtask
 
+	task run_mntr();
+		$display("[ID] %d", id);
+        $display("[%g] El Monitor fue inicializado", $time);
+
+		fork
+			fifo_hijo.receive_data_mesh();
+		join_none
+
+		forever begin
+			@(posedge fifo_hijo.vif.clk);
+			if (fifo_hijo.pndng_out) begin
+				$display("[%g][LECTURA][%d]", $time, id);
+				$display("[MONITOR][%d] queue_out[$]: %p", id, fifo_hijo.queue_out);
+
+				transaccion_mntr.tiempo = $time;
+				transaccion_mntr.paquete = fifo_hijo.queue_out.pop_back();
+				transaccion_mntr.print("[MONITOR] DATO RECIVIDO");
+			end
+		end
+	endtask
+
 
 endclass
 
@@ -143,6 +164,17 @@ class strt_drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_s
 				automatic int j=i;
 				begin
 					drvr_mntr_hijo[j].run_drvr();
+				end
+			join_none
+		end
+	endtask
+
+	task start_monitor();
+		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
+			fork
+				automatic int j=i;
+				begin
+					drvr_mntr_hijo[j].run_mntr();
 				end
 			join_none
 		end

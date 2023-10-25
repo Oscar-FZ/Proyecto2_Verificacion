@@ -89,6 +89,7 @@ module ambiente_TB();
 
 		fork
 			driver_monitor_inst.start_driver();
+			driver_monitor_inst.start_monitor();
 		join_none
 
 
