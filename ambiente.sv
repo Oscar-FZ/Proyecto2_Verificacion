@@ -22,7 +22,7 @@ module ambiente_TB();
 
 
 
-	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) trans[4];
+	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) trans[5];
 
 
 	mesh_gnrtr #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mesh_DUT
@@ -81,18 +81,19 @@ module ambiente_TB();
 		#2;
 		agnt_drvr_mbx[3].put(trans[3]);
 
-		//trans[4] = new(.t_row_n(4'h2), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1111_1111_1111_111), .dir_env_n(8'h10));
-		//#2;
-		//trans[4].crea_paquetes();
-		//#2;
-		//agnt_drvr_mbx[4].put(trans[4]);
-
-
+		trans[4] = new(.t_row_n(4'h2), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1111_1111_1111_111), .dir_env_n(8'h10));
+		#2;
+		trans[4].crea_paquetes();
+		#2;
+		agnt_drvr_mbx[4].put(trans[4]);
 
 		fork
 			driver_monitor_inst.start_driver();
 		join_none
 
+
+		#2000;
 		$display("FIN");
+		$finish;
 	end
 endmodule

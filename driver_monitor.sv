@@ -8,7 +8,7 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 	bit pndng_out;
 	bit [pckg_sz-1:0] data_out;
 
-	bit id;
+	int id;
 
 	virtual mesh_if #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) vif;
 
@@ -35,7 +35,10 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 		forever begin
 			@(posedge vif.clk)
 			vif.data_out_i_in[id] = queue_in[$];
+			//$display("[DRIVER][%d] queue_in[$]: 0x%h", id, queue_in[$]);
 			if (vif.popin[id]) begin
+				$display("WOOOOOOOOOOOOOOOOOOO");
+				$display("[QUEUE] %p [ID] %d", queue_in, id);
 				queue_in.pop_back();
 			end
 
@@ -93,6 +96,7 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 	endfunction
 
 	task run_drvr();
+		agnt_drvr_mbx[id].peek(transaccion);
 		$display("[ID] %d", id);
         $display("[%g] El Driver fue inicializado", $time);
 
@@ -111,12 +115,13 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 				espera = espera + 1;
 			end
 			
-			$display("[ESCRITURA]");
+			$display("[%g][ESCRITURA][%d]", $time, id);
 			transaccion.tiempo = $time;
 			fifo_hijo.queue_in.push_front(transaccion.paquete);
 			transaccion.print("[DRIVER] DATO ENVIADO");
 
 		end
+		$display("[ERROR!!!!]");
 	endtask
 
 

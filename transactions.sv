@@ -48,13 +48,13 @@ interface mesh_if #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz 
 		input clk
 	);
 
-	logic reset;
-	logic pndng [ROWS*2+COLUMS*2];
-	logic [pckg_sz-1:0] data_out [ROWS*2+COLUMS*2];
-	logic popin [ROWS*2+COLUMS*2];
-	logic pop [ROWS*2+COLUMS*2];
-	logic [pckg_sz-1:0] data_out_i_in [ROWS*2+COLUMS*2];
-	logic pndng_i_in [ROWS*2+COLUMS*2];
+	bit reset;
+	bit pndng [ROWS*2+COLUMS*2];
+	bit [pckg_sz-1:0] data_out [ROWS*2+COLUMS*2];
+	bit popin [ROWS*2+COLUMS*2];
+	bit pop [ROWS*2+COLUMS*2];
+	bit [pckg_sz-1:0] data_out_i_in [ROWS*2+COLUMS*2];
+	bit pndng_i_in [ROWS*2+COLUMS*2];
 endinterface
 
 
