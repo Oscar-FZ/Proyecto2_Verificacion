@@ -37,8 +37,8 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 			vif.data_out_i_in[id] = queue_in[$];
 			//$display("[DRIVER][%d] queue_in[$]: 0x%h", id, queue_in[$]);
 			if (vif.popin[id]) begin
-				$display("WOOOOOOOOOOOOOOOOOOO");
-				$display("[QUEUE] %p [ID] %d", queue_in, id);
+				//$display("WOOOOOOOOOOOOOOOOOOO");
+				//$display("[QUEUE] %p [ID] %d", queue_in, id);
 				queue_in.pop_back();
 			end
 
@@ -77,6 +77,7 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) transaccion_mntr;
 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
+	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
 
 
 	int espera;
@@ -91,6 +92,8 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 		for (int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			agnt_drvr_mbx[i] = new();
 		end
+
+		mntr_chkr_mbx = new();
 
 
 	endfunction
@@ -115,8 +118,8 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 				espera = espera + 1;
 			end
 			
-			$display("[%g][ESCRITURA][%d]", $time, id);
-			transaccion.tiempo = $time;
+			//$display("[%g][ESCRITURA][%d]", $time, id);
+			//transaccion.tiempo = $time;
 			fifo_hijo.queue_in.push_front(transaccion.paquete);
 			transaccion.print("[DRIVER] DATO ENVIADO");
 
@@ -135,12 +138,14 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 		forever begin
 			@(posedge fifo_hijo.vif.clk);
 			if (fifo_hijo.pndng_out) begin
-				$display("[%g][LECTURA][%d]", $time, id);
-				$display("[MONITOR][%d] queue_out[$]: %p", id, fifo_hijo.queue_out);
+				//$display("[%g][LECTURA][%d]", $time, id);
+				//$display("[MONITOR][%d] queue_out[$]: %p", id, fifo_hijo.queue_out);
 
 				transaccion_mntr.tiempo = $time;
+				transaccion_mntr.dir_rec = id;
 				transaccion_mntr.paquete = fifo_hijo.queue_out.pop_back();
 				transaccion_mntr.print("[MONITOR] DATO RECIVIDO");
+				mntr_chkr_mbx.put(transaccion_mntr);
 			end
 		end
 	endtask

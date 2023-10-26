@@ -2,6 +2,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 	
 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
+	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_chkr_mbx;
 
 	instr_pckg_mbx test_agnt_mbx;
 
@@ -16,6 +17,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 		for (int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			agnt_drvr_mbx[i] = new();
 		end
+		agnt_chkr_mbx = new();
 		test_agnt_mbx = new();
 	endfunction
 
@@ -29,12 +31,14 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 				case(tipo)
 					aleatorio: begin
 						for (int i = 0; i<num_trans; i++) begin
-							$display("[AGENT] %d", i);
+							//$display("[AGENT] %d", i);
 							transaccion = new(.max_retardo_n(max_retardo_agnt));
 							transaccion.randomize();
 							transaccion.crea_paquetes();
+							transaccion.tiempo = $time;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
-							transaccion.print("[AGENT] PAQUETE CREADO");
+							agnt_chkr_mbx.put(transaccion);
+							//transaccion.print("[AGENT] PAQUETE CREADO");
 						end
 					end
 				endcase
