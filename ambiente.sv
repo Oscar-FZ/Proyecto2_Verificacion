@@ -3,6 +3,7 @@
 `include "Router_library.sv"
 `include "transactions.sv"
 `include "driver_monitor.sv"
+`include "agent.sv"
 
 module ambiente_TB();
 	parameter pckg_sz = 32;
@@ -14,8 +15,12 @@ module ambiente_TB();
 	bit clk;
 
 	strt_drvr_mntr #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) driver_monitor_inst;
+	agent #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agent_inst;
 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
+	instr_pckg_mbx test_agnt_mbx;
+
+	instrucciones tipo;
 
 	mesh_if #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) _if (.clk(clk));
 	always #(1) clk = ~clk;
@@ -44,52 +49,63 @@ module ambiente_TB();
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			agnt_drvr_mbx[i] = new();
 		end
+		test_agnt_mbx = new();
 
+		agent_inst = new();
 		driver_monitor_inst = new();
 
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			driver_monitor_inst.drvr_mntr_hijo[i].fifo_hijo.vif = _if;
 			driver_monitor_inst.drvr_mntr_hijo[i].agnt_drvr_mbx[i] = agnt_drvr_mbx[i];
+			agent_inst.agnt_drvr_mbx[i] = agnt_drvr_mbx[i];
 			#2;
 		end
+
+		agent_inst.test_agnt_mbx = test_agnt_mbx;
+
+		agent_inst.num_trans = 30;
+		agent_inst.max_retardo_agnt = 20;
+		tipo = aleatorio;
+		test_agnt_mbx.put(tipo);
 
 		_if.reset = 1;
 		#2;
 		_if.reset = 0;
 		
-		trans[0] = new(.t_row_n(4'h4), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1010_1010_1010_101), .dir_env_n(8'h01));
-		#2;
-		trans[0].crea_paquetes();
-		#2;
-		agnt_drvr_mbx[0].put(trans[0]);
+		//trans[0] = new(.t_row_n(4'h4), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1010_1010_1010_101), .dir_env_n(8'h01));
+		//#2;
+		//trans[0].crea_paquetes();
+		//#2;
+		//agnt_drvr_mbx[0].put(trans[0]);
 		
-		trans[1] = new(.t_row_n(4'h5), .t_col_n(4'h4), .mode_n(1'b0), .pyld_n(15'b0101_0101_0101_010), .dir_env_n(8'h02));
-		#2;
-		trans[1].crea_paquetes();
-		#2;
-		agnt_drvr_mbx[1].put(trans[1]);
+		//trans[1] = new(.t_row_n(4'h5), .t_col_n(4'h4), .mode_n(1'b0), .pyld_n(15'b0101_0101_0101_010), .dir_env_n(8'h02));
+		//#2;
+		//trans[1].crea_paquetes();
+		//#2;
+		//agnt_drvr_mbx[1].put(trans[1]);
 
-		trans[2] = new(.t_row_n(4'h3), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1100_1100_1100_110), .dir_env_n(8'h03));
-		#2;
-		trans[2].crea_paquetes();
-		#2;
-		agnt_drvr_mbx[2].put(trans[2]);
+		//trans[2] = new(.t_row_n(4'h3), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1100_1100_1100_110), .dir_env_n(8'h03));
+		//#2;
+		//trans[2].crea_paquetes();
+		//#2;
+		//agnt_drvr_mbx[2].put(trans[2]);
 
-		trans[3] = new(.t_row_n(4'h5), .t_col_n(4'h3), .mode_n(1'b0), .pyld_n(15'b0011_0011_0011_001), .dir_env_n(8'h04));
-		#2;
-		trans[3].crea_paquetes();
-		#2;
-		agnt_drvr_mbx[3].put(trans[3]);
+		//trans[3] = new(.t_row_n(4'h5), .t_col_n(4'h3), .mode_n(1'b0), .pyld_n(15'b0011_0011_0011_001), .dir_env_n(8'h04));
+		//#2;
+		//trans[3].crea_paquetes();
+		//#2;
+		//agnt_drvr_mbx[3].put(trans[3]);
 
-		trans[4] = new(.t_row_n(4'h2), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1111_1111_1111_111), .dir_env_n(8'h10));
-		#2;
-		trans[4].crea_paquetes();
-		#2;
-		agnt_drvr_mbx[4].put(trans[4]);
+		//trans[4] = new(.t_row_n(4'h2), .t_col_n(4'h5), .mode_n(1'b1), .pyld_n(15'b1111_1111_1111_111), .dir_env_n(8'h10));
+		//#2;
+		//trans[4].crea_paquetes();
+		//#2;
+		//agnt_drvr_mbx[4].put(trans[4]);
 
 		fork
 			driver_monitor_inst.start_driver();
 			driver_monitor_inst.start_monitor();
+			agent_inst.run();
 		join_none
 
 

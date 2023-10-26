@@ -1,20 +1,31 @@
+typedef enum 
+	{
+	aleatorio
+	} instrucciones;
+    
 
 class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});
 
 	bit [7:0] nxt_jump;
 	bit [3:0] t_row;
 	bit [3:0] t_col;
-	bit mode;
-	bit [pckg_sz-18:0] pyld;
+	rand bit [11:0] t_row_col;
+	rand bit mode;
+	rand bit [pckg_sz-18:0] pyld;
 	bit [pckg_sz-1:0] paquete;
 
 	rand int retardo;
 	int tiempo;
 	int max_retardo;
-	bit [7:0]dir_env;
+	rand bit [3:0]dir_env;
 	bit [7:0]dir_rec;
 
-	function new(bit [7:0] nxt_jump_n = 8'b0, bit [3:0] t_row_n = 4'b0, bit [3:0] t_col_n = 4'b0, bit mode_n = 1'b0, bit [pckg_sz-18:0] pyld_n = 0, int retardo_n = 5, int tiempo_n = 0, int max_retardo_n = 10, bit [7:0] dir_env_n = 0, bit [7:0] dir_rec_n = 0);
+	constraint const_retardo {retardo < max_retardo; retardo > 0;}
+	constraint const_t_row_col {t_row_col inside{12'h01_0, 12'h02_1, 12'h03_2, 12'h04_3, 12'h10_4, 12'h20_5, 12'h30_6, 12'h40_7, 12'h51_8, 12'h52_9, 12'h53_A, 12'h54_B, 12'h15_C, 12'h25_D, 12'h35_E, 12'h45_F};}
+	constraint const_dir_env {dir_env >= 0; dir_env <= 15;}
+	constraint const_dir_env_dif {dir_env != t_row_col[3:0];}
+
+	function new(bit [7:0] nxt_jump_n = 8'b0, bit [3:0] t_row_n = 4'b0, bit [3:0] t_col_n = 4'b0, bit mode_n = 1'b0, bit [pckg_sz-18:0] pyld_n = 0, int retardo_n = 5, int tiempo_n = 0, int max_retardo_n = 10, bit [3:0] dir_env_n = 0, bit [7:0] dir_rec_n = 0);
 		this.nxt_jump 		= nxt_jump_n;
 		this.t_row 			= t_row_n;
 		this.t_col 			= t_col_n;
@@ -29,7 +40,7 @@ class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 	endfunction
 
 	task crea_paquetes();
-		this.paquete = {this.nxt_jump, this.t_row, this.t_col, this.mode, this.pyld};
+		this.paquete = {this.nxt_jump, this.t_row_col[11:4], this.mode, this.pyld};
 	endtask
 
 	function void print(input string tag = "");
@@ -59,4 +70,4 @@ endinterface
 
 
 typedef mailbox #(mesh_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) mesh_pckg_mbx;
-
+typedef mailbox #(instrucciones) instr_pckg_mbx;
