@@ -1,13 +1,18 @@
+//Clase que define el funcionamiento del checker
 class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});
-	
+	//Se crean los paquetes que se usaran para recivir informacion de los mailboxes del driver y monitor
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) transaccion;
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) transaccion_aux;
 
+	//Se crea que paquete que se va a mandar al score board
 	sb_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) to_sb;
+	//Se crea el paquete que recive la informacion de los paths
 	path_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) trans_path;
-	
+
+	//Se crea una queue de paquetes para guardar los paquetes del driver
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) emul_fifo[$];
-	
+
+	//Se crean los mailboxes 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_chkr_mbx;
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
 	path_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) path_chkr_mbx;
@@ -19,7 +24,7 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 
 	int dict [bit [pckg_sz-9:0]][$];
 
-
+	//Se inicializan todos los mailboxes, paquetes y variables
 	function new();
 		emul_fifo = {};
 		cont_aux = 0;
@@ -34,7 +39,8 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 		chkr_sb_mbx = new();
 		path_chkr_mbx = new();
 	endfunction
-
+	
+	//Task que guarda los paquetes que vienen del driver en una queue
 	task update();
 		$display("[%g] El Checker se esta actualizando", $time);
 		forever begin
@@ -43,6 +49,7 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 		end	
 	endtask
 
+	//Task que guarda los paths de los paquetes en un diccionario
 	task update_path();
 		forever begin
 			path_chkr_mbx.get(trans_path);
@@ -53,6 +60,8 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 		end
 	endtask
 
+	//Task que revisa que los paquetes enviados por los drivers hayan sido recibidos en los monitores correctamente
+	//Tambien construye los paquetes con la informacion necesaria para despues ser enviados al scoreboard
 	task check();
 		$display("[%g] El Checker esta revisando", $time);
 		cont = 0;
