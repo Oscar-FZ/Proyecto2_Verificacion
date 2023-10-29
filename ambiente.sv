@@ -9,7 +9,7 @@
 
 module ambiente_TB();
 	parameter pckg_sz = 32;
-	parameter fifo_depth = 4;
+	parameter fifo_depth = 8;
 	parameter bdcst = {8{1'b1}};
 	parameter ROWS = 4;
 	parameter COLUMS = 4;
@@ -23,7 +23,7 @@ module ambiente_TB();
 	scoreboard #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) scoreboard_inst;
 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
-	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_chkr_mbx;
+	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_chkr_mbx;
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
 	sb_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) chkr_sb_mbx;
 	instr_pckg_mbx test_agnt_mbx;
@@ -58,7 +58,7 @@ module ambiente_TB();
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			agnt_drvr_mbx[i] = new();
 		end
-		agnt_chkr_mbx = new();
+		drvr_chkr_mbx = new();
 		mntr_chkr_mbx = new();
 		chkr_sb_mbx = new();
 		test_agnt_mbx = new();
@@ -75,12 +75,13 @@ module ambiente_TB();
 			driver_monitor_inst.drvr_mntr_hijo[i].agnt_drvr_mbx[i] = agnt_drvr_mbx[i];
 			agent_inst.agnt_drvr_mbx[i] = agnt_drvr_mbx[i];
 			driver_monitor_inst.drvr_mntr_hijo[i].mntr_chkr_mbx = mntr_chkr_mbx;
+			driver_monitor_inst.drvr_mntr_hijo[i].drvr_chkr_mbx = drvr_chkr_mbx;
 			#2;
 		end
 
 		agent_inst.test_agnt_mbx = test_agnt_mbx;
-		agent_inst.agnt_chkr_mbx = agnt_chkr_mbx;
-		checker_inst.agnt_chkr_mbx = agnt_chkr_mbx;
+		//agent_inst.agnt_chkr_mbx = agnt_chkr_mbx;
+		checker_inst.drvr_chkr_mbx = drvr_chkr_mbx;
 		checker_inst.mntr_chkr_mbx = mntr_chkr_mbx;
 		checker_inst.chkr_sb_mbx = chkr_sb_mbx;
 		checker_inst.path_chkr_mbx = path_chkr_mbx;

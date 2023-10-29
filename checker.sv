@@ -8,7 +8,7 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 	
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) emul_fifo[$];
 	
-	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_chkr_mbx;
+	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_chkr_mbx;
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
 	path_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) path_chkr_mbx;
 
@@ -29,7 +29,7 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 		transaccion_aux = new();
 		trans_path = new();
 
-		agnt_chkr_mbx = new();
+		drvr_chkr_mbx = new();
 		mntr_chkr_mbx = new();
 		chkr_sb_mbx = new();
 		path_chkr_mbx = new();
@@ -38,7 +38,7 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 	task update();
 		$display("[%g] El Checker se esta actualizando", $time);
 		forever begin
-			agnt_chkr_mbx.get(transaccion_aux);
+			drvr_chkr_mbx.get(transaccion_aux);
 			emul_fifo.push_front(transaccion_aux);
 		end	
 	endtask

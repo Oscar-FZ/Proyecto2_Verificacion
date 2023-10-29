@@ -78,7 +78,7 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
-
+	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_chkr_mbx;
 
 	int espera;
 	int id;
@@ -94,6 +94,7 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 		end
 
 		mntr_chkr_mbx = new();
+		drvr_chkr_mbx = new();
 
 
 	endfunction
@@ -119,8 +120,10 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 			end
 			
 			//$display("[%g][ESCRITURA][%d]", $time, id);
-			//transaccion.tiempo = $time;
+
+			transaccion.tiempo = $time;
 			fifo_hijo.queue_in.push_front(transaccion.paquete);
+			drvr_chkr_mbx.put(transaccion);
 			transaccion.print("[DRIVER] DATO ENVIADO");
 
 		end
