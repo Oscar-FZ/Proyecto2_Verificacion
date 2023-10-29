@@ -34,13 +34,18 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 				$display("[SCOREBOARD] Imprimiendo Archivos");
 				if (inicio) begin //Si es el inicio del reporte escribe esto primero
 					rprt_sb = $fopen("reporte_scoreboard.csv", "w");
+					$fwrite(rprt_sb, "Rows; %d\n", ROWS);
+					$fwrite(rprt_sb, "Columns; %d\n", COLUMS);
+					$fwrite(rprt_sb, "Package Size; %d\n", pckg_sz);
+					$fwrite(rprt_sb, "FIFO depth; %d\n", fifo_depth);
+					$fwrite(rprt_sb, "Broadcast ID; %b\n", bdcst);
 					$fwrite(rprt_sb, ";Paquete; Estado; Direccion de Envio; Direccion de Recepcion; Tiempo de Envio; Tiempo de Recepcion; Latencia\n");
 					$fclose(rprt_sb);
 					inicio = 0;
 				end
 				//Escribe la informacion de los pauetes enviados por el checker
 				rprt_sb = $fopen("reporte_scoreboard.csv", "a");
-				$fwrite(rprt_sb, "[%d]; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
+				$fwrite(rprt_sb, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
 				$fclose(rprt_sb);	
 			end
 
