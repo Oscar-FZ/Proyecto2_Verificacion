@@ -94,6 +94,29 @@ class sb_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32
 
 endclass
 
+class path_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});	
+	int row;
+	int colum;
+	bit [pckg_sz-1:0] paquete;
+
+	function new();
+		this.row = 0;
+		this.colum = 0;
+		this.paquete = 0;
+	endfunction
+
+	function void print(input string tag = "");
+		$display("---------------------------");
+		$display("[TIME %g]", $time);
+        $display("%s", tag);
+		$display("ID Row = %d", this.row);
+		$display("ID Colum = %d", this.colum);
+		$display("Paquete = 0x%h",this.paquete);
+		$display("---------------------------");
+	endfunction
+
+endclass
+
 interface mesh_if #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}})
 	(
 		input clk
@@ -112,3 +135,4 @@ endinterface
 typedef mailbox #(mesh_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) mesh_pckg_mbx;
 typedef mailbox #(sb_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}})))sb_pckg_mbx;
 typedef mailbox #(instrucciones) instr_pckg_mbx;
+typedef mailbox #(path_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) path_pckg_mbx;

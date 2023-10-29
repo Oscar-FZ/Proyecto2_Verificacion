@@ -4,16 +4,21 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) transaccion_aux;
 
 	sb_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) to_sb;
+	path_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) trans_path;
 	
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) emul_fifo[$];
 	
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_chkr_mbx;
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
+	path_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) path_chkr_mbx;
 
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) chkr_sb_mbx;
 	
 	int cont_aux;
 	int cont;
+
+	int dict [bit [pckg_sz-9:0]][$];
+
 
 	function new();
 		emul_fifo = {};
@@ -22,10 +27,12 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 		to_sb = new();
 		transaccion = new();
 		transaccion_aux = new();
+		trans_path = new();
 
 		agnt_chkr_mbx = new();
 		mntr_chkr_mbx = new();
 		chkr_sb_mbx = new();
+		path_chkr_mbx = new();
 	endfunction
 
 	task update();
@@ -34,6 +41,16 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 			agnt_chkr_mbx.get(transaccion_aux);
 			emul_fifo.push_front(transaccion_aux);
 		end	
+	endtask
+
+	task update_path();
+		forever begin
+			path_chkr_mbx.get(trans_path);
+			dict[trans_path.paquete[pckg_sz-9:0]].push_back(trans_path.row);
+			dict[trans_path.paquete[pckg_sz-9:0]].push_back(trans_path.colum);
+			$display("[DICCIONARIO][%d] Key: %h - array: %p", dict.num(), trans_path.paquete[pckg_sz-9:0], dict[trans_path.paquete[pckg_sz-9:0]]);
+
+		end
 	endtask
 
 	task check();
