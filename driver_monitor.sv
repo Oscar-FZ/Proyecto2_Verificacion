@@ -1,3 +1,4 @@
+//Clase que simula la fifo de los datos de entrada y salida del DUT
 class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});
 	
 	bit [pckg_sz-1:0] queue_in [$];
@@ -10,9 +11,10 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 
 	int id;
 
+	//Interfaz virrtual del DUT
 	virtual mesh_if #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) vif;
 
-
+	//Funcion que crea los fifo
 	function new (input int identificador);
 		this.queue_in = {};
 		this.pndng_in = 0;
@@ -23,7 +25,7 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 		this.id = identificador;
 	endfunction
 
-
+	//Task que actualiza el pndng_i_in del DUT
 	task update_vif_pndng();
 		forever begin
 			@(negedge vif.clk);
@@ -31,6 +33,7 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 		end
 	endtask
 
+	//Task que envia los datos al DUT
 	task send_data_mesh();
 		forever begin
 			@(posedge vif.clk)
@@ -50,6 +53,7 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 	endtask
 
 
+	//Task que recive los datos del DUT
 	task receive_data_mesh();
 		forever begin
 			@(posedge vif.clk);
@@ -67,22 +71,25 @@ class fifo #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, p
 	endtask
 endclass
 
+//Clase que describe el funcionamiento del Driver y Monitor
 class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40, parameter fifo_depth = 4, parameter bdcst= {8{1'b1}});
 
-	
+	//Instanciamos un fifo
 	fifo #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) fifo_hijo;
 
-
+	//Creamos los paquetes que se van a usar en los mailboxes
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) transaccion;
 	mesh_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) transaccion_mntr;
 
+	//Instanciamos los mailboxes
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_chkr_mbx;
 
-	int espera;
-	int id;
+	int espera; 	//Variable usada en el conteo del retraso de cada paquete 
+	int id; 		//Varible que identifica cada driver y monitor
 
+	//Iniciamos los paquetes, mailboxes y variables
 	function new (input int identificador);
 		fifo_hijo = new(identificador);
 		id = identificador;
@@ -99,17 +106,19 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 
 	endfunction
 
+	//Task que inicia el funcionamiento del driver
 	task run_drvr();
 		agnt_drvr_mbx[id].peek(transaccion);
 		$display("[ID] %d", id);
         $display("[%g] El Driver fue inicializado", $time);
-
+		//Iniciamos las tareas relacionadas con el driver
 		fork
 			fifo_hijo.update_vif_pndng();
 			fifo_hijo.send_data_mesh();
 		join_none
 		@(posedge fifo_hijo.vif.clk);
 		forever begin
+			//Introduciomos los paquetes del driver al DUT
 			fifo_hijo.vif.reset = 0;
 			espera = 0;
 
@@ -130,15 +139,17 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 		$display("[ERROR!!!!]");
 	endtask
 
+	//Task que inicia el funcionamiento del monitor
 	task run_mntr();
 		$display("[ID] %d", id);
         $display("[%g] El Monitor fue inicializado", $time);
-
+		//Ejecutamos las tareas correspodientes al monitr
 		fork
 			fifo_hijo.receive_data_mesh();
 		join_none
 
 		forever begin
+			//Sacamos los paquetes del DUT y los mandamos al checker
 			@(posedge fifo_hijo.vif.clk);
 			if (fifo_hijo.pndng_out) begin
 				//$display("[%g][LECTURA][%d]", $time, id);
@@ -156,16 +167,17 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 
 endclass
 
+//Clase que inicializa todos los driver y monitores
 class strt_drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40, parameter fifo_depth = 4, parameter bdcst= {8{1'b1}});
 	drvr_mntr #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_mntr_hijo [ROWS*2+COLUMS*2];
-
+	//Instanciamos todos los driver y monitores necesarios
 	function new();
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			drvr_mntr_hijo[i] = new(i);
 		end
 	endfunction
 
-
+	//Ejecutamos todos los Drivers
 	task start_driver();
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			fork
@@ -177,6 +189,7 @@ class strt_drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_s
 		end
 	endtask
 
+	//Ejecutamos todos lo monitores
 	task start_monitor();
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			fork
