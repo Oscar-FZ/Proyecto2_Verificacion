@@ -8,6 +8,7 @@
 `include "scoreboard.sv"
 
 module ambiente_TB();
+	//Definicion de los parametros
 	parameter pckg_sz = 32;
 	parameter fifo_depth = 8;
 	parameter bdcst = {8{1'b1}};
@@ -16,12 +17,14 @@ module ambiente_TB();
 
 	bit clk;
 
-
+	//Instanciacion de todos los bloques
 	strt_drvr_mntr #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) driver_monitor_inst;
 	agent #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agent_inst;
 	checker_p #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) checker_inst;
 	scoreboard #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) scoreboard_inst;
 
+
+	//Instanciacion de los mailboxes
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) agnt_drvr_mbx[ROWS*2+COLUMS*2];
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) drvr_chkr_mbx;
 	mesh_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mntr_chkr_mbx;
@@ -31,14 +34,15 @@ module ambiente_TB();
 
 	instrucciones tipo;
 
+	//Instanciacion de la interfaz 
 	mesh_if #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) _if (.clk(clk));
 	always #(1) clk = ~clk;
 
 
-
+	//Paquete para guardar los paths de cada transaccion
 	path_pckg #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) paths;
 
-
+	//Intanciacion del DUT
 	mesh_gnrtr #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) mesh_DUT
 	(
 		.clk			(_if.clk),
@@ -54,7 +58,7 @@ module ambiente_TB();
 
 	initial begin
 		clk = 0;
-
+		//Se inician los mailboxes
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			agnt_drvr_mbx[i] = new();
 		end
@@ -64,12 +68,14 @@ module ambiente_TB();
 		test_agnt_mbx = new();
 		path_chkr_mbx = new();
 
+		//Se inician las instancias
 		scoreboard_inst = new();
 		checker_inst = new();
 		agent_inst = new();
 		driver_monitor_inst = new();
 		paths = new();
 
+		//Se conecta la interfaz y los mailboxes
 		for(int i = 0; i < (ROWS*2+COLUMS*2); i++) begin
 			driver_monitor_inst.drvr_mntr_hijo[i].fifo_hijo.vif = _if;
 			driver_monitor_inst.drvr_mntr_hijo[i].agnt_drvr_mbx[i] = agnt_drvr_mbx[i];
@@ -97,15 +103,16 @@ module ambiente_TB();
 		#2;
 		_if.reset = 0;
 
+		//Se inician todas las tareas
 		fork
-			driver_monitor_inst.start_driver();
-			driver_monitor_inst.start_monitor();
-			agent_inst.run();
-			checker_inst.update();
-			checker_inst.check();
-			checker_inst.update_path();
-			save_path();
-			scoreboard_inst.run();
+			driver_monitor_inst.start_driver(); 	//El driver empieza a trabajar
+			driver_monitor_inst.start_monitor(); 	//El monitor empieza a trabajar
+			agent_inst.run(); 						//El agente empieza a trabajar
+			checker_inst.update(); 					//El checker se actualiza
+			checker_inst.check(); 					//El checker empieza a revisar
+			checker_inst.update_path(); 			//El checker guarda los paths de los paquetes
+			save_path(); 							//Inicia la tarea que registra los paths y los envia al checker
+			scoreboard_inst.run(); 					//El scoreboard empieza a trabajar
 		join_none
 
 		#2000;
@@ -113,17 +120,6 @@ module ambiente_TB();
 		$finish;
 	end
 
-	task print_rc(int r = 1, int c = 1, p = 0);
-		forever begin
-			@(posedge _if.clk);
-			//$display("adsads %d", mesh_DUT.pepe);
-			if (mesh_DUT._rw_[1]._clm_[1].rtr._nu_[1].rtr_ntrfs_.pop) begin
-				$display("[AMBIENTE] Row: %d Col: %d", mesh_DUT._rw_[1]._clm_[1].rtr._nu_[1].rtr_ntrfs_.id_r, mesh_DUT._rw_[1]._clm_[1].rtr._nu_[1].rtr_ntrfs_.id_c);
-			end
-			$display("[AMBIENTE] POP_CONNECTED %b", mesh_DUT._rw_[1]._clm_[1].pop_connected[1]);
-			
-		end
-	endtask
 
 	task save_path();
 		forever begin
