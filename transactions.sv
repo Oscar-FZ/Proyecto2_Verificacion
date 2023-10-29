@@ -1,9 +1,10 @@
+//Tipo de operaciones que puede realizar el agente
 typedef enum 
 	{
 	aleatorio
 	} instrucciones;
     
-
+//Clase que define el tipo de paquetes que pueden ser enviados y recibidos por el DUT
 class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});
 
 	bit [7:0] nxt_jump;
@@ -54,6 +55,7 @@ class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 	endfunction
 endclass
 
+//Clase que define los paquetes para comunicarse con el scoreboard
 class sb_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});
 	
 	bit [pckg_sz-1:0] paquete;
@@ -94,6 +96,7 @@ class sb_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32
 
 endclass
 
+//Clase que define los paquetes que guardan la informacion del path de los paquetes que viajan por el DUT
 class path_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, parameter fifo_depth = 4, parameter bdcst = {8{1'b1}});	
 	int row;
 	int colum;
@@ -131,8 +134,8 @@ interface mesh_if #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz 
 	bit pndng_i_in [ROWS*2+COLUMS*2];
 endinterface
 
-
-typedef mailbox #(mesh_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) mesh_pckg_mbx;
-typedef mailbox #(sb_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}})))sb_pckg_mbx;
-typedef mailbox #(instrucciones) instr_pckg_mbx;
-typedef mailbox #(path_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) path_pckg_mbx;
+//Defino los Mailboxes
+typedef mailbox #(mesh_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) mesh_pckg_mbx; 	//Mailbox de tipo mesh_pckg
+typedef mailbox #(sb_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}})))sb_pckg_mbx; 		//Mailbox de tipo sb_pckg
+typedef mailbox #(instrucciones) instr_pckg_mbx; 																		//Mailbox de tipo instrucciones
+typedef mailbox #(path_pckg #(.ROWS(4), .COLUMS(4), .pckg_sz(32), .fifo_depth(4), .bdcst({8{1'b1}}))) path_pckg_mbx; 	//Mailbox de tipo path_pckg
