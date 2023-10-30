@@ -49,7 +49,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							//transaccion.tiempo = $time;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
 							//agnt_chkr_mbx.put(transaccion);
-							//transaccion.print("[AGENT] PAQUETE CREADO");
+							transaccion.print("[AGENT ALEATORIO] PAQUETE CREADO");
 						end
 					end
 
@@ -59,7 +59,10 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							transaccion.randomize();
 							transaccion.crea_paquetes();
 							transaccion.retardo = 1;
+							transaccion.tipo = tipo;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+							transaccion.print("[AGENT RET MIN] PAQUETE CREADO");
+						end
 					end
 
 					ret_max: begin
@@ -69,6 +72,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							transaccion.crea_paquetes();
 							transaccion.retardo = max_retardo_agnt;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+						end
 					end
 
 					broadcast: begin

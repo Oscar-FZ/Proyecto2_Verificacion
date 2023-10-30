@@ -32,7 +32,7 @@ module ambiente_TB();
 	instr_pckg_mbx test_agnt_mbx;
 	path_pckg_mbx #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) path_chkr_mbx;
 
-	instrucciones tipo;
+	instrucciones tipo[2];
 
 	//Instanciacion de la interfaz 
 	mesh_if #(.ROWS(ROWS), .COLUMS(COLUMS), .pckg_sz(pckg_sz), .fifo_depth(fifo_depth), .bdcst(bdcst)) _if (.clk(clk));
@@ -96,8 +96,10 @@ module ambiente_TB();
 		agent_inst.num_trans = 10;
 		agent_inst.max_retardo_agnt = 20;
 		scoreboard_inst.num_trans = agent_inst.num_trans;
-		tipo = aleatorio;
-		test_agnt_mbx.put(tipo);
+		//tipo[0] = aleatorio;
+		tipo[1] = ret_min;
+		//test_agnt_mbx.put(tipo[0]);
+		test_agnt_mbx.put(tipo[1]);
 
 		_if.reset = 1;
 		#2;
