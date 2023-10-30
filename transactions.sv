@@ -2,10 +2,10 @@
 typedef enum 
 	{
 	aleatorio,
-	broadcast,
-	llenado_esp,
 	ret_min,
-	ret_max
+	ret_max,
+	broadcast,
+	overload
 	} instrucciones;
     
 //Clase que define el tipo de paquetes que pueden ser enviados y recibidos por el DUT
@@ -48,6 +48,27 @@ class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 
 	task crea_paquetes();
 		this.paquete = {this.nxt_jump, this.t_row_col[11:4], this.mode, this.pyld};
+	endtask
+
+	task crea_dir_rec();
+		case(this.dir_rec)
+			4'h0: this.t_row_col = 12'h01_0;
+			4'h1: this.t_row_col = 12'h02_1;
+			4'h2: this.t_row_col = 12'h03_2;
+			4'h3: this.t_row_col = 12'h04_3;
+			4'h4: this.t_row_col = 12'h10_4;
+			4'h5: this.t_row_col = 12'h20_5;
+			4'h6: this.t_row_col = 12'h30_6;
+			4'h7: this.t_row_col = 12'h40_7;
+			4'h8: this.t_row_col = 12'h51_8;
+			4'h9: this.t_row_col = 12'h52_9;
+			4'hA: this.t_row_col = 12'h53_A;
+			4'hB: this.t_row_col = 12'h54_B;
+			4'hC: this.t_row_col = 12'h15_C;
+			4'hD: this.t_row_col = 12'h25_D;
+			4'hE: this.t_row_col = 12'h35_E;
+			4'hF: this.t_row_col = 12'h45_F;	
+		endcase
 	endtask
 
 	function void print(input string tag = "");

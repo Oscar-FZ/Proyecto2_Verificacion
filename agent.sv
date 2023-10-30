@@ -16,6 +16,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 	int num_trans; 			//Numero de paquetes que se vana  crear 
 	int max_retardo_agnt; 	//Retardo maximo de los paquetes
 	bit [pckg_sz-1:0] queue_esp [$];
+	bit [11:0] t_row_col_aux;
 
 	//int retardo_agnt;
 	
@@ -49,7 +50,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							//transaccion.tiempo = $time;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
 							//agnt_chkr_mbx.put(transaccion);
-							transaccion.print("[AGENT ALEATORIO] PAQUETE CREADO");
+							//transaccion.print("[AGENT ALEATORIO] PAQUETE CREADO");
 						end
 					end
 
@@ -61,7 +62,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							transaccion.retardo = 1;
 							transaccion.tipo = tipo;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
-							transaccion.print("[AGENT RET MIN] PAQUETE CREADO");
+							//transaccion.print("[AGENT RET MIN] PAQUETE CREADO");
 						end
 					end
 
@@ -77,28 +78,35 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 					end
 
 					broadcast: begin
-						for (int i = 0; i < num_trans; i++) begin
-							transaccion = new(.max_retardo_n(max_retardo_agnt));
-							transaccion.randomize();
-							transaccion.t_row_col[11:4] = bdcst;
-							transaccion.crea_paquetes();
-							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
-							transaccion.print("[AGENT] PAQUETE CREADO");
-						end	
-					end
-
-					llenado_esp: begin
-						for (int i = 0; i < num_trans; i++) begin
-							transaccion = new(.max_retardo_n(max_retardo_agnt));
-							transaccion.randomize();
-							transaccion.pyld = 'hA;
-							transaccion.t_row_col = 12'h30_6; 
-							transaccion.crea_paquetes();
-							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
-							transaccion.print("[AGENT] PAQUETE CREADO");
+						transaccion = new(.max_retardo_n(max_retardo_agnt));
+						transaccion.randomize();
+						transaccion.tipo = tipo;
+						for (bit [4:0] i = 5'b00000; i < 5'b10000; i++) begin
+							if (i[3:0] != transaccion.dir_env) begin
+								transaccion.dir_rec = i[3:0];
+								transaccion.crea_dir_rec();
+								transaccion.crea_paquetes();
+								transaccion.print("[AGENT BROADCAST] PAQUETE CREADO");
+								agnt_drvr_mbx[transaccion.dir_env].put(transaccion);	
+							end
 						end
+						break;
 					end
 
+					overload: begin 
+						transaccion = new(.max_retardo_n(max_retardo_agnt));
+						transaccion.randomize();
+						t_row_col_aux = transaccion.t_row_col;
+						for (int i = 0; i < num_trans; i++) begin
+							transaccion = new(.max_retardo_n(max_retardo_agnt));
+							transaccion.randomize();
+							transaccion.t_row_col = t_row_col_aux;
+							transaccion.tipo = tipo;
+							transaccion.crea_paquetes();
+							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+						end
+						break;
+					end
 				endcase
 			end
 		end

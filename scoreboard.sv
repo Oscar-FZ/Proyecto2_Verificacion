@@ -14,10 +14,14 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 	int inicio_a;
 	int inicio_min;
 	int inicio_max;
+	int inicio_bdcst;
+	int inicio_ovrld;
 	int j;
 	int rprt_al;
 	int rprt_min;
 	int rprt_max;
+	int rprt_bdcst;
+	int rprt_ovrld;
 	int proms_al;
 	int proms_min;
 	int proms_max;
@@ -35,6 +39,8 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 		inicio_a = 1;
 		inicio_min = 1;
 		inicio_max = 1;
+		inicio_bdcst = 1;
+		inicio_ovrld = 1;
 		num_trans_aux = 0;
 		tiempo_inicio = 0;
 		tiempo_final = 0;
@@ -187,6 +193,46 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 					$fwrite(proms_max, "Promedio General; %d\n", (ret_prom/num_tot));
 					$fwrite(proms_max, "Ancho de Banda; %d\n", (num_tot*pckg_sz*1000)/(tiempo_final-tiempo_inicio));
 					$fclose(proms_max);
+				end
+
+				broadcast: begin
+					if (inicio_bdcst) begin //Si es el inicio del reporte escribe esto primero
+						tiempo_inicio = trans_sb.tiempo_env;
+						rprt_bdcst = $fopen("reporte_scoreboard_bdcst.csv", "w");
+						$fwrite(rprt_bdcst, "Rows; %d\n", ROWS);
+						$fwrite(rprt_bdcst, "Columns; %d\n", COLUMS);
+						$fwrite(rprt_bdcst, "Package Size; %d\n", pckg_sz);
+						$fwrite(rprt_bdcst, "FIFO depth; %d\n", fifo_depth);
+						$fwrite(rprt_bdcst, "Broadcast ID; %b\n", bdcst);
+						$fwrite(rprt_bdcst, ";Paquete; Estado; Direccion de Envio; Direccion de Recepcion; Tiempo de Envio; Tiempo de Recepcion; Latencia\n");
+						$fclose(rprt_bdcst);
+						inicio_bdcst = 0;
+					end
+					tiempo_final = trans_sb.tiempo_rec;
+					//Escribe la informacion de los pauetes enviados por el checker
+					rprt_bdcst = $fopen("reporte_scoreboard_bdcst.csv", "a");
+					$fwrite(rprt_bdcst, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
+					$fclose(rprt_bdcst);
+				end
+
+				overload: begin
+					if (inicio_ovrld) begin //Si es el inicio del reporte escribe esto primero
+						tiempo_inicio = trans_sb.tiempo_env;
+						rprt_al = $fopen("reporte_scoreboard_ovrld.csv", "w");
+						$fwrite(rprt_ovrld, "Rows; %d\n", ROWS);
+						$fwrite(rprt_ovrld, "Columns; %d\n", COLUMS);
+						$fwrite(rprt_ovrld, "Package Size; %d\n", pckg_sz);
+						$fwrite(rprt_ovrld, "FIFO depth; %d\n", fifo_depth);
+						$fwrite(rprt_ovrld, "Broadcast ID; %b\n", bdcst);
+						$fwrite(rprt_ovrld, ";Paquete; Estado; Direccion de Envio; Direccion de Recepcion; Tiempo de Envio; Tiempo de Recepcion; Latencia\n");
+						$fclose(rprt_ovrld);
+						inicio_ovrld = 0;
+					end
+					tiempo_final = trans_sb.tiempo_rec;
+					//Escribe la informacion de los pauetes enviados por el checker
+					rprt_ovrld = $fopen("reporte_scoreboard_ovrld.csv", "a");
+					$fwrite(rprt_ovrld, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
+					$fclose(rprt_ovrld);
 				end
 
 				endcase	
