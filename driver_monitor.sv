@@ -123,6 +123,7 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 			espera = 0;
 
 			agnt_drvr_mbx[id].get(transaccion);
+			transaccion.tiempo = $time;
 			while (espera < transaccion.retardo) begin
 				@(posedge fifo_hijo.vif.clk);
 				espera = espera + 1;
@@ -130,7 +131,6 @@ class drvr_mntr #(parameter ROWS = 4, parameter COLUMS =4, parameter pckg_sz =40
 			
 			//$display("[%g][ESCRITURA][%d]", $time, id);
 
-			transaccion.tiempo = $time;
 			fifo_hijo.queue_in.push_front(transaccion.paquete);
 			drvr_chkr_mbx.put(transaccion);
 			transaccion.print("[DRIVER] DATO ENVIADO");

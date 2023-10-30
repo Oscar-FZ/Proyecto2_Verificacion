@@ -1,0 +1,24 @@
+Rows;           4
+Columns;           4
+Package Size;          32
+FIFO depth;           4
+Broadcast ID; 11111111
+Terminal; Retardo Promedio
+          0;           0
+          1;         158
+          2;          84
+          3;         126
+          4;         104
+          5;         136
+          6;         135
+          7;          64
+          8;           0
+          9;          82
+         10;         122
+         11;         117
+         12;         115
+         13;         121
+         14;         116
+         15;         172
+Promedio General;         117
+Ancho de Banda;        5839

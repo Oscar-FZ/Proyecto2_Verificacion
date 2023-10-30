@@ -103,6 +103,7 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 
 				ret_min: begin
 					if (inicio_min) begin //Si es el inicio del reporte escribe esto primero
+						tiempo_inicio = trans_sb.tiempo_env;
 						rprt_min = $fopen("reporte_scoreboard_min.csv", "w");
 						$fwrite(rprt_min, "Rows; %d\n", ROWS);
 						$fwrite(rprt_min, "Columns; %d\n", COLUMS);
@@ -113,14 +114,40 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 						$fclose(rprt_min);
 						inicio_min = 0;
 					end
+					tiempo_final = trans_sb.tiempo_rec;
 					//Escribe la informacion de los pauetes enviados por el checker
 					rprt_min = $fopen("reporte_scoreboard_min.csv", "a");
 					$fwrite(rprt_min, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
 					$fclose(rprt_min);
+
+					ret_prom = 0;
+					num_tot = 0;
+					proms_min = $fopen("promedio_scoreboard_min.csv", "w");
+					$fwrite(proms_min, "Rows; %d\n", ROWS);
+					$fwrite(proms_min, "Columns; %d\n", COLUMS);
+					$fwrite(proms_min, "Package Size; %d\n", pckg_sz);
+					$fwrite(proms_min, "FIFO depth; %d\n", fifo_depth);
+					$fwrite(proms_min, "Broadcast ID; %b\n", bdcst);
+					$fwrite(proms_min, "Terminal; Retardo Promedio\n");
+					for (int i = 0; i < 16; i++) begin
+						ret_prom += ret_x_terminal[i];
+						num_tot += num_trans_x_terminal[i];
+						if (num_trans_x_terminal[i] > 0) begin
+							$fwrite(proms_min, "%d; %d\n", i, (ret_x_terminal[i]/num_trans_x_terminal[i]));
+						end
+
+						else $fwrite(proms_min, "%d; %d\n", i, 0);
+
+
+					end
+					$fwrite(proms_min, "Promedio General; %d\n", (ret_prom/num_tot));
+					$fwrite(proms_min, "Ancho de Banda; %d\n", (num_tot*pckg_sz*1000)/(tiempo_final-tiempo_inicio));
+					$fclose(proms_min);
 				end
 
 				ret_max: begin
 					if (inicio_max) begin //Si es el inicio del reporte escribe esto primero
+						tiempo_inicio = trans_sb.tiempo_env;
 						rprt_max = $fopen("reporte_scoreboard_max.csv", "w");
 						$fwrite(rprt_max, "Rows; %d\n", ROWS);
 						$fwrite(rprt_max, "Columns; %d\n", COLUMS);
@@ -131,10 +158,35 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 						$fclose(rprt_max);
 						inicio_max = 0;
 					end
+					tiempo_final = trans_sb.tiempo_rec;
 					//Escribe la informacion de los pauetes enviados por el checker
 					rprt_max = $fopen("reporte_scoreboard_max.csv", "a");
 					$fwrite(rprt_max, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
 					$fclose(rprt_max);
+
+					ret_prom = 0;
+					num_tot = 0;
+					proms_max = $fopen("promedio_scoreboard_max.csv", "w");
+					$fwrite(proms_max, "Rows; %d\n", ROWS);
+					$fwrite(proms_max, "Columns; %d\n", COLUMS);
+					$fwrite(proms_max, "Package Size; %d\n", pckg_sz);
+					$fwrite(proms_max, "FIFO depth; %d\n", fifo_depth);
+					$fwrite(proms_max, "Broadcast ID; %b\n", bdcst);
+					$fwrite(proms_max, "Terminal; Retardo Promedio\n");
+					for (int i = 0; i < 16; i++) begin
+						ret_prom += ret_x_terminal[i];
+						num_tot += num_trans_x_terminal[i];
+						if (num_trans_x_terminal[i] > 0) begin
+							$fwrite(proms_max, "%d; %d\n", i, (ret_x_terminal[i]/num_trans_x_terminal[i]));
+						end
+
+						else $fwrite(proms_max, "%d; %d\n", i, 0);
+
+
+					end
+					$fwrite(proms_max, "Promedio General; %d\n", (ret_prom/num_tot));
+					$fwrite(proms_max, "Ancho de Banda; %d\n", (num_tot*pckg_sz*1000)/(tiempo_final-tiempo_inicio));
+					$fclose(proms_max);
 				end
 
 				endcase	
