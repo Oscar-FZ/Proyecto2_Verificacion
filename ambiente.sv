@@ -93,11 +93,11 @@ module ambiente_TB();
 		checker_inst.path_chkr_mbx = path_chkr_mbx;
 		scoreboard_inst.chkr_sb_mbx = chkr_sb_mbx;
 
-		agent_inst.num_trans = 10;
+		agent_inst.num_trans = 50;
 		agent_inst.max_retardo_agnt = 20;
 		scoreboard_inst.num_trans = agent_inst.num_trans;
 		//tipo[0] = aleatorio;
-		tipo[1] = ret_min;
+		tipo[1] = aleatorio;
 		//test_agnt_mbx.put(tipo[0]);
 		test_agnt_mbx.put(tipo[1]);
 

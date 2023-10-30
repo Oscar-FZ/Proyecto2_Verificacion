@@ -71,6 +71,7 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							transaccion.randomize();
 							transaccion.crea_paquetes();
 							transaccion.retardo = max_retardo_agnt;
+							transaccion.tipo = tipo;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
 						end
 					end
