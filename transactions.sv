@@ -1,7 +1,11 @@
 //Tipo de operaciones que puede realizar el agente
 typedef enum 
 	{
-	aleatorio
+	aleatorio,
+	broadcast,
+	llenado_esp,
+	ret_min,
+	ret_max
 	} instrucciones;
     
 //Clase que define el tipo de paquetes que pueden ser enviados y recibidos por el DUT
@@ -14,6 +18,7 @@ class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 	rand bit mode;
 	rand bit [pckg_sz-18:0] pyld;
 	bit [pckg_sz-1:0] paquete;
+	instrucciones tipo;
 
 	rand int retardo;
 	int tiempo;
@@ -38,6 +43,7 @@ class mesh_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 		this.max_retardo 	= max_retardo_n;
 		this.dir_env 		= dir_env_n;
 		this.dir_rec 		= dir_rec_n;
+		this.tipo 		= aleatorio;
 	endfunction
 
 	task crea_paquetes();
@@ -65,6 +71,7 @@ class sb_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32
 	int tiempo_env;
 	int tiempo_rec;
 	int latencia;
+	instrucciones tipo;
 
 
 	function new();
@@ -75,6 +82,7 @@ class sb_pckg #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32
 		this.tiempo_env = 0;
 		this.tiempo_rec = 0;
 		this.latencia = 0;
+		this.tipo = aleatorio;
 	endfunction
 
 	task calc_latencia();

@@ -10,7 +10,7 @@
 module ambiente_TB();
 	//Definicion de los parametros
 	parameter pckg_sz = 32;
-	parameter fifo_depth = 8;
+	parameter fifo_depth = 4;
 	parameter bdcst = {8{1'b1}};
 	parameter ROWS = 4;
 	parameter COLUMS = 4;
@@ -93,7 +93,7 @@ module ambiente_TB();
 		checker_inst.path_chkr_mbx = path_chkr_mbx;
 		scoreboard_inst.chkr_sb_mbx = chkr_sb_mbx;
 
-		agent_inst.num_trans = 50;
+		agent_inst.num_trans = 10;
 		agent_inst.max_retardo_agnt = 20;
 		scoreboard_inst.num_trans = agent_inst.num_trans;
 		tipo = aleatorio;

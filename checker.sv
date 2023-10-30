@@ -79,6 +79,7 @@ class checker_p #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 
 					to_sb.tiempo_env = emul_fifo[i].tiempo;
 					to_sb.tiempo_rec = transaccion.tiempo;
 					to_sb.calc_latencia();
+					to_sb.tipo = emul_fifo[i].tipo;
 					to_sb.print("[CHECKER]");
 					chkr_sb_mbx.put(to_sb);	
 				end

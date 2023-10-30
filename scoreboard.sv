@@ -14,6 +14,9 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 	int inicio;
 	int j;
 	int rprt_sb;
+
+	int ret_x_terminal [16];
+	int num_trans_x_terminal [16];
 	
 	function new();
 		chkr_sb_mbx = new();
@@ -29,27 +32,35 @@ class scoreboard #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz =
 			if (chkr_sb_mbx.num()>0) begin
 				$display("[SCOREBOARD] Transaccion recibida");
 				chkr_sb_mbx.get(trans_sb);
+				ret_x_terminal[trans_sb.dir_rec] += trans_sb.latencia;
+				num_trans_x_terminal[trans_sb.dir_rec] += 1;
+				$display("[RETARDO] %p", ret_x_terminal);
+				$display("[NUMTRANSxTERMINAL] %p", num_trans_x_terminal);
 				num_trans_aux++;
 
 				$display("[SCOREBOARD] Imprimiendo Archivos");
-				if (inicio) begin //Si es el inicio del reporte escribe esto primero
-					rprt_sb = $fopen("reporte_scoreboard.csv", "w");
-					$fwrite(rprt_sb, "Rows; %d\n", ROWS);
-					$fwrite(rprt_sb, "Columns; %d\n", COLUMS);
-					$fwrite(rprt_sb, "Package Size; %d\n", pckg_sz);
-					$fwrite(rprt_sb, "FIFO depth; %d\n", fifo_depth);
-					$fwrite(rprt_sb, "Broadcast ID; %b\n", bdcst);
-					$fwrite(rprt_sb, ";Paquete; Estado; Direccion de Envio; Direccion de Recepcion; Tiempo de Envio; Tiempo de Recepcion; Latencia\n");
+				case(trans_sb.tipo)
+				aleatorio: begin
+					if (inicio) begin //Si es el inicio del reporte escribe esto primero
+						rprt_sb = $fopen("reporte_scoreboard.csv", "w");
+						$fwrite(rprt_sb, "Rows; %d\n", ROWS);
+						$fwrite(rprt_sb, "Columns; %d\n", COLUMS);
+						$fwrite(rprt_sb, "Package Size; %d\n", pckg_sz);
+						$fwrite(rprt_sb, "FIFO depth; %d\n", fifo_depth);
+						$fwrite(rprt_sb, "Broadcast ID; %b\n", bdcst);
+						$fwrite(rprt_sb, ";Paquete; Estado; Direccion de Envio; Direccion de Recepcion; Tiempo de Envio; Tiempo de Recepcion; Latencia\n");
+						$fclose(rprt_sb);
+						inicio = 0;
+					end
+					//Escribe la informacion de los pauetes enviados por el checker
+					rprt_sb = $fopen("reporte_scoreboard.csv", "a");
+					$fwrite(rprt_sb, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
 					$fclose(rprt_sb);
-					inicio = 0;
 				end
-				//Escribe la informacion de los pauetes enviados por el checker
-				rprt_sb = $fopen("reporte_scoreboard.csv", "a");
-				$fwrite(rprt_sb, "%d; 0x%h; %b; 0x%h; 0x%h; %g; %g; %g\n", num_trans_aux, trans_sb.paquete, trans_sb.completado, trans_sb.dir_env, trans_sb.dir_rec, trans_sb.tiempo_env, trans_sb.tiempo_rec, trans_sb.latencia);
-				$fclose(rprt_sb);	
+				endcase	
 			end
 
-			if (num_trans_aux == num_trans) break;
+			//if (num_trans_aux == num_trans) break;
 		end
 	endtask
 

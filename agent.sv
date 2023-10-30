@@ -15,6 +15,8 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 	
 	int num_trans; 			//Numero de paquetes que se vana  crear 
 	int max_retardo_agnt; 	//Retardo maximo de los paquetes
+	bit [pckg_sz-1:0] queue_esp [$];
+
 	//int retardo_agnt;
 	
 	//Inicializo todos los mailboxes
@@ -43,12 +45,55 @@ class agent #(parameter ROWS = 4, parameter COLUMS = 4, parameter pckg_sz = 32, 
 							transaccion = new(.max_retardo_n(max_retardo_agnt));
 							transaccion.randomize();
 							transaccion.crea_paquetes();
+							transaccion.tipo = tipo;
 							//transaccion.tiempo = $time;
 							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
 							//agnt_chkr_mbx.put(transaccion);
 							//transaccion.print("[AGENT] PAQUETE CREADO");
 						end
 					end
+
+					ret_min: begin
+						for (int i = 0; i<num_trans; i++) begin
+							transaccion = new(.max_retardo_n(max_retardo_agnt));
+							transaccion.randomize();
+							transaccion.crea_paquetes();
+							transaccion.retardo = 1;
+							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+					end
+
+					ret_max: begin
+						for (int i = 0; i<num_trans; i++) begin
+							transaccion = new(.max_retardo_n(max_retardo_agnt));
+							transaccion.randomize();
+							transaccion.crea_paquetes();
+							transaccion.retardo = max_retardo_agnt;
+							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+					end
+
+					broadcast: begin
+						for (int i = 0; i < num_trans; i++) begin
+							transaccion = new(.max_retardo_n(max_retardo_agnt));
+							transaccion.randomize();
+							transaccion.t_row_col[11:4] = bdcst;
+							transaccion.crea_paquetes();
+							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+							transaccion.print("[AGENT] PAQUETE CREADO");
+						end	
+					end
+
+					llenado_esp: begin
+						for (int i = 0; i < num_trans; i++) begin
+							transaccion = new(.max_retardo_n(max_retardo_agnt));
+							transaccion.randomize();
+							transaccion.pyld = 'hA;
+							transaccion.t_row_col = 12'h30_6; 
+							transaccion.crea_paquetes();
+							agnt_drvr_mbx[transaccion.dir_env].put(transaccion);
+							transaccion.print("[AGENT] PAQUETE CREADO");
+						end
+					end
+
 				endcase
 			end
 		end

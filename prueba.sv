@@ -66,7 +66,7 @@ module prueba_tb();
 		#2;
 		rst = 0;
 		#2;
-		data_out_i_in[0] = 32'b00000000_0100_0101_1_10101010_0101010;
+		data_out_i_in[0] = 32'b00000000_1111_1111_1_10101010_0101010;
 		pndng_i_in[0] = 1'b1; 
 		while(popin[0] == 1'b0) begin
 			#1;
